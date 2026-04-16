@@ -1,0 +1,16 @@
+{
+  "task_list": [
+    "新增 todo 項目（支援輸入標題與描述）",
+    "列出所有 todo 項目（顯示 ID、標題、狀態）",
+    "標記 todo 項目為完成",
+    "刪除指定 todo 項目",
+    "依狀態篩選 todo 項目（全部 / 未完成 / 已完成）",
+    "將 todo 資料持久化儲存至本地檔案（JSON 格式）"
+  ],
+  "current_task_index": 5,
+  "task_status": "完成",
+  "retry_count": 0,
+  "system_status": "done",
+  "reviewer_notes": "",
+  "judge_notes": "所有任務已完成"
+}

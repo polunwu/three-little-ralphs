@@ -1,0 +1,7 @@
+- 啟動 sbx 要先複製 claude 設定
+- 啟動步驟 Judge, Reviwer, Excecuter
+- 要叫他們看 git diff
+- 要可以分 /agent, /skill 資料夾，/agent 可以使用 skiil
+- 可以打包裝到不同專案裡
+- git worktree? branch?
+- 完成後要標記: [x]
