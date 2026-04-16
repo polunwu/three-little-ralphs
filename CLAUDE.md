@@ -26,23 +26,20 @@ Copy `workflow/` into the target project root.
 bash workflow/start.sh
 ```
 
-**3. Launch four terminals** (each uses `sbx run claude` because `sbx run` doesn't pass args to claude directly):
+**3. Launch three terminals in order** (each uses `sbx run claude` because `sbx run` doesn't pass args to claude directly):
 
 ```bash
-# Terminal 1 — monitor / sandbox host
-cd test-todo-project && sbx run claude
-
-# Terminal 2 — Executor
+# Terminal 1 — Judge (start first)
 sbx run claude
-# Then type: /loop 1min 執行 workflow/executor.md 的工作
+# Then type: /loop 1min 執行 workflow/agents/judge.md 的工作
 
-# Terminal 3 — Reviewer
+# Terminal 2 — Reviewer
 sbx run claude
-# Then type: /loop 1min 執行 workflow/reviewer.md 的工作
+# Then type: /loop 1min 執行 workflow/agents/reviewer.md 的工作
 
-# Terminal 4 — Judge
+# Terminal 3 — Executor (start last)
 sbx run claude
-# Then type: /loop 1min 執行 workflow/judge.md 的工作
+# Then type: /loop 1min 執行 workflow/agents/executor.md 的工作
 ```
 
 **4. Monitor state:**
@@ -79,9 +76,9 @@ State is managed in `workflow/state.json` (created from `state.json.template` by
 
 **Agent responsibilities:**
 
-- **Executor** (`workflow/executor.md`): acts when `task_status == "待實作"` — implements code, commits, advances status to `"待審查"`
-- **Reviewer** (`workflow/reviewer.md`): acts when `task_status == "待審查"` — reviews code quality and requirements fit; passes to `"待驗收"` or rejects back to `"待實作"`
-- **Judge** (`workflow/judge.md`): acts when `task_status == "待驗收"` — checks for deviation (changes outside task scope), accepts and advances to next task or rejects
+- **Executor** (`workflow/agents/executor.md`): acts when `task_status == "待實作"` — implements code, commits, writes to `implementation_done.md`, advances status to `"待審查"`
+- **Reviewer** (`workflow/agents/reviewer.md`): acts when `task_status == "待審查"` — runs `git show HEAD`, reviews code quality and requirements fit; passes to `"待驗收"` or rejects back to `"待實作"`
+- **Judge** (`workflow/agents/judge.md`): acts when `task_status == "待驗收"` — runs `git log -p -3`, checks for deviation, accepts and advances to next task or rejects
 
 `workflow/state.py` handles file-locking (`fcntl`) and optional git commits atomically.
 

@@ -15,13 +15,21 @@ python3 workflow/state.py read
 - `system_status` 不是 `"running"`
 - `task_status` 不是 `"待審查"`
 
-**步驟 3：讀取任務與程式碼**
+**步驟 3：取得 git 上下文**
 
-- 從 `task_list[current_task_index]` 取出當前任務描述
+執行以下指令，查看 Executor 最近一次 commit 的完整變更內容：
+
+```bash
+git show HEAD
+```
+
+**步驟 4：讀取任務與程式碼**
+
+- 從 `task_list[current_task_index]` 取出當前任務描述（忽略開頭的標記）
 - 讀取相關程式碼檔案
 - 記下目前的 `retry_count`
 
-**步驟 4：審查**
+**步驟 5：審查**
 
 評估：
 1. 程式碼品質（命名、結構、可讀性、是否有明顯錯誤）

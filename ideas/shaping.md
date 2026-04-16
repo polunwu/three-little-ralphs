@@ -2,34 +2,33 @@
 shaping: true
 ---
 
-# Claude Code 多角色工作流 — Shaping
+# Claude Code 多角色工作流 v2 — Shaping
 
 ## Requirements (R)
 
 | ID | Requirement | Status |
 |----|-------------|--------|
-| R0 | 系統能自動執行一份任務列表，直到全部完成，無需人介入 | Core goal |
-| R1 | 三個角色各自擁有獨立的 context window，互不污染 | Must-have |
-| R2 | 任務進度與狀態持久化在共享文件中，任何角色都可以讀取當前狀態 | Must-have |
-| R3 | Reviewer 審查程式碼品質與任務需求符合度；不通過則退回 Executor | Must-have |
-| R4 | Judge 驗收任務需求符合度，並負責任務調度與通報使用者 | Must-have |
-| R5 | 任務列表需在執行前定義完成；執行中動態新增需經使用者確認 | Must-have |
-| R6 | Judge 偵測到執行偏離任務定義時，暫停並通知使用者確認後再繼續 | Must-have |
-| R7 | Executor 單一任務最多退回重做 3 次；超過後暫停並通報使用者目前情況 | Must-have |
-| R8 | 系統針對寫程式任務設計（Executor 具備程式碼讀寫能力） | Must-have |
+| R0 | `start.sh` 自動複製 `settings/agent-claude-settings.json` 到 `.claude/settings.json`，並依序印出三段啟動指令（Judge → Reviewer → Executor），貼進 terminal 即可執行 | Must-have |
+| R1 | Reviewer 確定輪到自己後執行 `git show HEAD`；Judge 執行 `git log -p -3`；Executor 不需要 | Must-have |
+| R2 | 建立 `workflow/agents/`，將 executor.md / reviewer.md / judge.md 移入；建立空的 `workflow/skills/`（留給未來） | Must-have |
+| R3 | state.json `task_list` 項目帶 `[ ]`/`[/]`/`[x]` 前綴作為唯一標記來源；state.py 每次寫入時同步 tasks.md；start.sh 初始化時從 tasks.md 讀入並加 `[ ]` 前綴；Executor 標 `[/]`、Judge 標 `[x]`、退回清 `[ ]` | Must-have |
+| R3b | Executor 每次 commit 後 append 一筆紀錄至 `workflow/implementation_done.md`（日期時間、任務名稱、摘要 ≤200字、files changed、commit hash） | Must-have |
+| R4 | v1 核心狀態機邏輯（state.json 結構、三角色流轉）保持不變 | Must-have |
+
+延後（明確排出本輪）：
+- tmux 一鍵啟動三角色 → v3 研究
 
 ---
 
-## A: 三角色狀態機 + 共享 State File
+## A: v2 四項改進
 
 | Part | Mechanism |
 |------|-----------|
-| A1 | **State File** — 存放 task_list、current_task_index、task_status、retry_count、system_status、reviewer_notes、judge_notes；所有角色與使用者皆可讀寫 |
-| A2 | **Executor** — 讀取 State，若 system_status=running 且 task_status=待實作則執行，完成後更新 task_status → 待審查 |
-| A3 | **Reviewer** — 讀取 State，若 system_status=running 且 task_status=待審查則審查程式碼品質與需求符合度；通過更新為待驗收，否則退回並附 reviewer_notes、遞增 retry_count；retry ≥ 3 時寫入 waiting_for_user |
-| A4 | **Judge** — 讀取 State，若 system_status=running 且 task_status=待驗收則驗收；通過推進下一任務並重置 retry_count；不通過退回；retry ≥ 3 或偵測偏離時寫入 waiting_for_user + judge_notes |
-| A5 | **Loop 協調** — 三個角色各自以 loop 輪詢 State File；system_status=waiting_for_user 時所有角色暫停，直到使用者將 system_status 改回 running |
-| A6 | **動態新增確認** — 動態新增任務時，Judge 將 system_status 設為 waiting_for_user 並附說明，待使用者確認寫入 task_list 後才恢復執行 |
+| **A1** | **start.sh 改版** — 自動複製 `settings/agent-claude-settings.json` 到 `.claude/settings.json`，完成後依序印出三段啟動指令（Judge → Reviewer → Executor） |
+| **A2** | **目錄重整** — 建立 `workflow/agents/`，將 executor.md / reviewer.md / judge.md 移入；建立空的 `workflow/skills/`（留給未來） |
+| **A3** | **Agent prompt 加 git 上下文** — Reviewer 確認輪到自己後執行 `git show HEAD`；Judge 執行 `git log -p -3`；Executor 不需要（自己寫的） |
+| **A4** | **任務標記** — state.json `task_list` 為唯一標記來源；Executor 實作完後標 `[/]`、Judge 驗收通過後改 `[x]`、退回清 `[ ]`；state.py 每次寫入時同步 tasks.md；start.sh 初始化時從 tasks.md 讀入並加 `[ ]` 前綴 |
+| **A5** | **實作摘要紀錄** — Executor commit 後 append 至 `workflow/implementation_done.md`：日期時間、任務名稱、摘要（≤200字）、files changed、commit hash |
 
 ---
 
@@ -37,20 +36,11 @@ shaping: true
 
 | Req | Requirement | Status | A |
 |-----|-------------|--------|---|
-| R0 | 系統能自動執行一份任務列表，直到全部完成，無需人介入 | Core goal | ✅ |
-| R1 | 三個角色各自擁有獨立的 context window，互不污染 | Must-have | ✅ |
-| R2 | 任務進度與狀態持久化在共享文件中，任何角色都可以讀取當前狀態 | Must-have | ✅ |
-| R3 | Reviewer 審查程式碼品質與任務需求符合度；不通過則退回 Executor | Must-have | ✅ |
-| R4 | Judge 驗收任務需求符合度，並負責任務調度與通報使用者 | Must-have | ✅ |
-| R5 | 任務列表需在執行前定義完成；執行中動態新增需經使用者確認 | Must-have | ✅ |
-| R6 | Judge 偵測到執行偏離任務定義時，暫停並通知使用者確認後再繼續 | Must-have | ✅ |
-| R7 | Executor 單一任務最多退回重做 3 次；超過後暫停並通報使用者目前情況 | Must-have | ✅ |
-| R8 | 系統針對寫程式任務設計（Executor 具備程式碼讀寫能力） | Must-have | ✅ |
+| R0 | start.sh 自動複製 settings，並依序印出三段啟動指令 | Must-have | ✅ |
+| R1 | Reviewer: git show HEAD；Judge: git log -p -3；Executor: 不需要 | Must-have | ✅ |
+| R2 | workflow/agents/ + workflow/skills/ 巢狀分層 | Must-have | ✅ |
+| R3 | state.json task_list 帶前綴為唯一來源；state.py 同步 tasks.md；start.sh 初始化加 [ ] 前綴 | Must-have | ✅ |
+| R3b | Executor commit 後 append 至 implementation_done.md | Must-have | ✅ |
+| R4 | 核心狀態機邏輯不變 | Must-have | ✅ |
 
 **Selected shape: A**
-
----
-
-## Breadboard
-
-見 `breadboard.md`

@@ -15,18 +15,21 @@ python3 workflow/state.py read
 - `system_status` 不是 `"running"`
 - `task_status` 不是 `"待驗收"`
 
-**步驟 3：讀取任務與結果**
+**步驟 3：取得 git 上下文**
 
-- 從 `task_list[current_task_index]` 取出當前任務描述
-- 讀取相關程式碼檔案
-- 確認最近的 git commit 變更範圍：
+執行以下指令，查看最近三次 commit 的完整變更內容（涵蓋本任務所有 retry）：
+
 ```bash
-git log --oneline -5
-git diff HEAD~1 --name-only
+git log -p -3
 ```
+
+**步驟 4：讀取任務與結果**
+
+- 從 `task_list[current_task_index]` 取出當前任務描述（忽略開頭的標記）
+- 讀取相關程式碼檔案
 - 記下目前的 `retry_count` 和 `current_task_index`
 
-**步驟 4：偏離偵測（優先於驗收）**
+**步驟 5：偏離偵測（優先於驗收）**
 
 若發現以下任一情況，判定為「偏離」：
 - 修改了任務描述範圍外的程式碼
@@ -38,11 +41,11 @@ git diff HEAD~1 --name-only
 python3 workflow/state.py write '{"system_status": "waiting_for_user", "judge_notes": "{偏離說明}"}' "[judge] task {index} pause: deviation detected"
 ```
 
-**步驟 5：驗收**
+**步驟 6：驗收**
 
 評估任務是否完整達成需求。
 
-**步驟 5a：通過**
+**步驟 6a：通過**
 
 若還有下一個任務（`current_task_index + 1 < len(task_list)`）：
 ```bash
@@ -54,7 +57,7 @@ python3 workflow/state.py write '{"task_status": "待實作", "current_task_inde
 python3 workflow/state.py write '{"system_status": "done", "task_status": "完成", "judge_notes": "所有任務已完成"}' "[judge] all tasks done"
 ```
 
-**步驟 5b：退回**
+**步驟 6b：退回**
 
 計算新的 retry_count = 目前的 retry_count + 1。
 
