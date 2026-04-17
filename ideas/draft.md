@@ -1,9 +1,17 @@
-- 啟動 sbx 要先複製 claude 設定到專案資料夾
-- 啟動步驟為 Judge -> Reviwer -> Excecuter
-- 要叫三個角色看 git diff
-- 要可以分 /agent, /skill，角色放到 /agent 裡，角色可以呼叫 skiil
-- Excecuter 完成後要標記: [x]
-- Excecuter 完成後再獨立一個檔案紀錄完成項目，讓使用者方便查閱
-  先不用：
+- 跑完一個小任務後自動 clear or compact context window
+- 用 skill creator 新增 skills
+  - guildline
+  - code review
+  - software engineering princicple
+  - task creator
+- start.sh 放到 /bin 檔裡
+- MD 文件用全大寫命名
+- 不可以修改 workflow 裡面的檔案
+
+以下先不用：
+
+- Excutor 有能力把文件拆成 tasks.md，並且符合軟體設計的慣例
 - 可以打包裝到不同專案裡
 - git worktree? branch?
+- 跟 agent team 有何不同
+- 支援更複雜的 Task 結構

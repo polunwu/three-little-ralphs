@@ -6,7 +6,7 @@ PROJECT_DIR="$(dirname "$WORKFLOW_DIR")"
 STATE_FILE="$WORKFLOW_DIR/state.json"
 TEMPLATE_FILE="$WORKFLOW_DIR/state.json.template"
 TASKS_FILE="$WORKFLOW_DIR/tasks.md"
-SETTINGS_SRC="$PROJECT_DIR/settings/agent-claude-settings.json"
+SETTINGS_SRC="$WORKFLOW_DIR/settings/agent-claude-settings.json"
 SETTINGS_DST="$PROJECT_DIR/.claude/settings.json"
 
 # Copy agent settings
@@ -30,16 +30,19 @@ with open(tasks_file, encoding="utf-8") as f:
 
 tasks_raw = []
 for line in lines:
-    line = line.strip()
-    if line.startswith("- "):
-        line = line[2:].strip()
+    stripped = line.strip()
+    is_task = stripped.startswith("- ") or any(stripped.startswith(p) for p in ("[ ] ", "[/] ", "[x] "))
+    if not is_task:
+        continue
+    if stripped.startswith("- "):
+        stripped = stripped[2:].strip()
     # Strip existing marker prefixes if re-initializing
     for prefix in ("[ ] ", "[/] ", "[x] "):
-        if line.startswith(prefix):
-            line = line[len(prefix):]
+        if stripped.startswith(prefix):
+            stripped = stripped[len(prefix):]
             break
-    if line:
-        tasks_raw.append(line)
+    if stripped:
+        tasks_raw.append(stripped)
 
 if not tasks_raw:
     print("錯誤：tasks.md 中找不到任何任務（格式：'- 任務描述'）", file=sys.stderr)
@@ -56,10 +59,20 @@ with open(state_file, "w", encoding="utf-8") as f:
     json.dump(state, f, ensure_ascii=False, indent=2)
     f.write("\n")
 
-# Sync tasks.md to reflect [ ] prefix format
+# Sync tasks.md: preserve non-task lines, update task lines with [ ] prefix
+new_lines = []
+task_iter = iter(tasks)
+for line in lines:
+    stripped = line.strip()
+    if stripped.startswith("- ") or any(stripped.startswith(p) for p in ("[ ] ", "[/] ", "[x] ")):
+        try:
+            new_lines.append(next(task_iter) + "\n")
+        except StopIteration:
+            pass
+    else:
+        new_lines.append(line)
 with open(tasks_file, "w", encoding="utf-8") as f:
-    for t in tasks:
-        f.write(t + "\n")
+    f.writelines(new_lines)
 
 print(f"✓ 已載入 {len(tasks)} 個任務：")
 for i, t in enumerate(tasks):
