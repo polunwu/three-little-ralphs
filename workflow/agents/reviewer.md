@@ -4,7 +4,9 @@
 
 **步驟 0：讀取行為準則**
 
-閱讀並遵守 `workflow/skills/karpathy-guidelines/SKILL.md` 的所有準則。
+閱讀並遵守以下兩份準則：
+- `workflow/skills/karpathy-guidelines/SKILL.md`
+- `workflow/skills/google-code-review/SKILL.md`
 
 **步驟 1：讀取狀態**
 
@@ -35,9 +37,11 @@ git show HEAD
 
 **步驟 5：審查**
 
-評估：
+依照 `workflow/skills/google-code-review/SKILL.md` 的格式與標準進行審查，評估：
 1. 程式碼品質（命名、結構、可讀性、是否有明顯錯誤）
 2. 任務需求符合度（實作是否完整達成任務描述）
+
+**通過條件：** 審查結果中「Blocking Issues」區段必須為空（零個 blocking 問題），才能視為通過。只有 Nits/Suggestions 不影響通過。
 
 **步驟 5a：通過 → 更新狀態**
 

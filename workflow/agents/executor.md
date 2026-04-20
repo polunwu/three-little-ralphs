@@ -23,9 +23,13 @@ python3 workflow/state.py read
 
 從 `task_list[current_task_index]` 取出當前任務描述（忽略開頭的 `[ ]`/`[/]`/`[x]` 標記）。
 
+檢查 `reviewer_notes` 欄位：
+- 若非空，代表 Reviewer 曾退回，其中包含 **Blocking Issues** 清單
+- 本次實作必須逐一修正所有 Blocking Issues，再繼續完成任務
+
 **步驟 4：實作程式碼**
 
-根據任務描述實作程式碼。你可以讀取、新增、修改專案中的任何檔案。不要修改 `workflow/` 目錄下除 `implementation_done.md` 以外的任何檔案。
+根據任務描述實作程式碼。若 `reviewer_notes` 有 Blocking Issues，優先修正後再實作其他變更。你可以讀取、新增、修改專案中的任何檔案。不要修改 `workflow/` 目錄下除 `implementation_done.md` 以外的任何檔案。
 
 **步驟 5：Commit 程式碼變更**
 
