@@ -2,6 +2,10 @@
 
 ## 每次迭代的流程
 
+**步驟 0：讀取行為準則**
+
+閱讀並遵守 `workflow/skills/karpathy-guidelines/SKILL.md` 的所有準則。
+
 **步驟 1：讀取狀態**
 
 執行：
