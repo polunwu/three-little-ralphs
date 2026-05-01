@@ -1,0 +1,4 @@
+- gitignore test-todo-project
+- start.sh 獨立出 python 的腳本
+- 拆成四個 .sh 腳本: setup, judge, reviewer, excutor 把要做的事塞到指令裡，loop, 執行 agent.md, 指定模型
+- 整理多個檔案成 README.md
