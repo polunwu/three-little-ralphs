@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repo Is
 
-A sandbox for experimenting with **multi-agent Claude Code workflows** running inside Docker Sandboxes (`sbx`). The main artifact is a reusable `workflow/` directory that can be dropped into any project to orchestrate three specialized Claude agents (Executor, Reviewer, Judge) running in parallel loops.
+A sandbox for experimenting with **multi-agent Claude Code workflows** running inside Docker Sandboxes (`sbx`). The main artifact is a reusable `workflow/` directory that can be dropped into any project to orchestrate three specialized Claude agents (Executor, Reviewer, Judge) running in parallel ralph loops.
 
 `test-todo-project/` is the reference project used to validate the workflow — a minimal Python CLI todo app.
 
@@ -54,12 +54,6 @@ python3 workflow/state.py read
 python3 workflow/state.py write '{"system_status": "running"}'
 ```
 
-### Shortcut: apply agent settings and launch sbx in one command
-
-```bash
-./claude.sh sbx
-```
-
 ---
 
 ## Workflow Architecture
@@ -86,7 +80,7 @@ State is managed in `workflow/state.json` (created from `state.json.template` by
 
 ## Docker Sandbox (`sbx`) Setup
 
-See `setup-sbx.md` for full install instructions. Quick reference:
+See `README.md` for full install instructions. Quick reference:
 
 ```bash
 brew install docker/tap/sbx
@@ -107,9 +101,9 @@ sbx run --branch auto claude
 
 ## Agent Settings
 
-`settings/agent-claude-settings.json` is the locked-down permission profile for agents running inside `sbx`. It blocks: reading/writing `.env` files, `rm -rf`, `sudo`, `git push`, and writes to `*.production.*` / `*.prod.*` files.
+`workflow/settings/agent-claude-settings.json` is the locked-down permission profile for agents running inside `sbx`. It blocks: reading/writing `.env` files, `rm -rf`, `sudo`, `git push`, and writes to `*.production.*` / `*.prod.*` files.
 
-`./claude.sh sbx` copies this file to `.claude/settings.json` before launching the sandbox.
+`bash workflow/start.sh` automatically copies this file to `.claude/settings.json`.
 
 ---
 
